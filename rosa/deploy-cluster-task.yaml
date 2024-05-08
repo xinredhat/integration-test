@@ -1,0 +1,41 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: rosa-cluster-create-task
+spec:
+  params:
+    - name: version
+      description: ocp cluster version that you want to provision
+      default: "4.14"
+    - name: region
+      description: ocp cluster region where you want to provision
+      default: "us-east-1"
+    - name: cluster-name
+      default: "rhtap-qe"
+  steps:
+    - name: create-cluster
+      image: quay.io/redhat-pipeline-service/ci-runner:main
+      script: |
+        echo "create hcp cluster"
+        echo "version: $(params.version)"
+    - name: write-kubeconfig
+      image: quay.io/redhat-pipeline-service/ci-runner:main
+      env:
+        - name: aws_key_id
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret
+              key: aws_access_key_id
+        - name: aws_key_secret
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret
+              key: aws_secret_access_key
+      script: |
+        set -ex
+        echo "write kubeconfig"
+        echo "cluster-name: $(params.cluster-name)"
+        echo "region: $(params.region)"
+        echo "aws_id=$aws_key_id"
+        echo "aws_secret=$aws_key_secret"

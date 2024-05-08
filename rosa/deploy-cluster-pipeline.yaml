@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: rosa-cluster-create-pipeline
+spec:
+  tasks:
+    - name: rosa-cluster-create
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/xinredhat/integration-test.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: rosa/deploy-cluster-task.yaml
+    - name: test
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/xinredhat/integration-test.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: rosa/test.yaml
+
+      
