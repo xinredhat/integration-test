@@ -1,0 +1,69 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: hcp-cluster-test-pipeline
+spec:
+  description: "This pipeline creates a ROSA HCP cluster, runs tests, and then deletes the cluster."
+  params:
+    - name: version
+    - name: region
+  tasks:
+    - name: generate-cluster-name
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/xinredhat/integration-test.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: hcp/generate-cluster-name.yaml
+    - name: create-rosa-cluster
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/xinredhat/integration-test.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: hcp/hcp-cluster-create.yaml
+      params:
+        - name: name
+          value: "$(tasks.generate-cluster-name.results.cluster-name)"
+        - name: version
+          value: "$(params.version)"
+        - name: region
+          value: "$(params.region)"
+    - name: test
+      params:
+        - name: ocp-login-command
+          value: "$(tasks.create-rosa-cluster.results.ocp-login-command)"
+      taskSpec:
+        params:
+          - name: ocp-login-command
+            description: The command to login to the created cluster
+        steps:
+          - name: run-tests
+            image: quay.io/konflux-qe-incubator/konflux-qe-tools@sha256:2fefc1984a58889c3f057734aedd92fabfcee4454f8b3524ffbc61bb38d87e02
+            script: |
+              set -o errexit
+              set -o nounset
+              set -o pipefail
+              echo "Running tests..."
+              echo "$(params.ocp-login-command)"
+    - name: delete-rosa-cluster
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/xinredhat/integration-test.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: hcp/hcp-cluster-delete.yaml
+      params:
+        - name: name
+          value: "$(tasks.generate-cluster-name.results.cluster-name)"
+        - name: region
+          value: "$(params.region)"

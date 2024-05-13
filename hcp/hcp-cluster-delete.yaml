@@ -1,0 +1,60 @@
+---
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: hcp-cluster-create-task
+spec:
+  params:
+    - name: name
+      description: ocp cluster name that you want to delete
+    - name: region
+      description: ocp cluster region where you want to delete
+  steps:
+    - name: delete-cluster
+      image: quay.io/konflux-qe-incubator/konflux-qe-tools@sha256:2fefc1984a58889c3f057734aedd92fabfcee4454f8b3524ffbc61bb38d87e02
+      env:
+        - name: CLUSTER_NAME
+          value: "$(params.name)"
+        - name: ROSA_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hcp-cluster_secret
+              key: "rosa_token"
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: hcp-cluster_secret
+              key: "aws_access_key_id"
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: hcp-cluster_secret
+              key: "aws_secret_access_key"
+        - name: REGION
+          value: "$(params.region)"
+      script: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+
+        config_aws_creds() {
+            aws configure set aws_access_key_id $(cat /workspace/AWS_ACCESS_KEY_ID)
+            aws configure set aws_secret_access_key $(cat /workspace/AWS_SECRET_ACCESS_KEY)
+            aws configure set region $(params.AWS_REGION)
+        }
+
+        if [[ -n "$CLUSTER_NAME"  ]]; then
+            echo "INFO: [$(date +"%Y/%m/%d %H:%M:%S")] Started to destroy cluster [$CLUSTER_NAME]..."
+
+            printf "INFO: Log in to your Red Hat account...\n"
+            config_aws_creds
+            rosa login --token="$ROSA_TOKEN"
+
+            # Here we just trigger the deletion of the cluster, we won't wait for it to be completely deleted
+            rosa delete cluster --region "$REGION" --cluster="$CLUSTER_NAME" -y
+
+        else
+            echo "INFO: No OCP cluster need to be destroyed."
+        fi
+
+        echo "INFO: [$(date +"%Y/%m/%d %H:%M:%S")] Done"
