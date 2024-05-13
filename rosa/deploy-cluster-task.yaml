@@ -26,7 +26,6 @@ spec:
     - name: write-kubeconfig
       image: quay.io/redhat-pipeline-service/ci-runner:main
       script: |
-        set -ex
         echo "write kubeconfig"
         echo "cluster-name: $(params.cluster-name)"
         echo "region: $(params.region)"

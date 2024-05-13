@@ -3,8 +3,13 @@ kind: Pipeline
 metadata:
   name: rosa-cluster-create-pipeline
 spec:
+  description: "This pipeline creates a ROSA cluster, runs tests, and then deletes the cluster."
+  params:
+    - name: cluster-name
+    - name: version
+    - name: region
   tasks:
-    - name: rosa-cluster-create
+    - name: create-rosa-cluster
       taskRef:
         resolver: git
         params:
@@ -13,7 +18,12 @@ spec:
           - name: revision
             value: main
           - name: pathInRepo
-            value: rosa/deploy-cluster-task.yaml
+            value: rosa/rosa-cluster-create-task.yaml
+      params:
+        - name: name
+          value: "$(params.cluster-name)"
+        - name: version
+          value: "$(params.version)"
     - name: test
       taskRef:
         resolver: git
@@ -24,5 +34,20 @@ spec:
             value: main
           - name: pathInRepo
             value: rosa/test.yaml
+    - name: delete-rosa-cluster
+      taskRef:
+        resolver: git
+        params:
+          - name: url
+            value: https://github.com/xinredhat/integration-test.git
+          - name: revision
+            value: main
+          - name: pathInRepo
+            value: rosa/rosa-cluster-delete-task.yaml
+      params:
+        - name: name
+          value: "$(params.cluster-name)"
+        - name: region
+          value: "$(params.region)"
 
       
