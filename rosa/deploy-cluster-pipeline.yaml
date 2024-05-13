@@ -24,6 +24,8 @@ spec:
           value: "$(params.cluster-name)"
         - name: version
           value: "$(params.version)"
+        - name: region
+          value: "$(params.region)"
     - name: test
       taskRef:
         resolver: git
@@ -34,6 +36,9 @@ spec:
             value: main
           - name: pathInRepo
             value: rosa/test.yaml
+      params:
+        - name: ocp-login-command
+          value: "$(tasks.create-rosa-cluster.results.ocp-login-command)"
     - name: delete-rosa-cluster
       taskRef:
         resolver: git

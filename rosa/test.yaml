@@ -5,17 +5,11 @@ metadata:
   name: test
 spec:
   params:
-    - name: version
-      description: ocp cluster version that you want to provision
-      default: "4.14"
-    - name: region
-      description: ocp cluster region where you want to provision
-      default: "us-east-1"
-    - name: cluster-name
-      default: "rhtap-qe"
+    - name: ocp-login-command
+      type: string
   steps:
     - name: run-test
       image: quay.io/redhat-pipeline-service/ci-runner:main
       script: |
         echo "create hcp cluster"
-        echo "version: $(params.version)"
+        echo "version: $(params.ocp-login-command)"

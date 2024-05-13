@@ -37,6 +37,12 @@ spec:
         set -o nounset
         set -o pipefail
 
+        config_aws_creds() {
+            aws configure set aws_access_key_id $(cat /workspace/AWS_ACCESS_KEY_ID)
+            aws configure set aws_secret_access_key $(cat /workspace/AWS_SECRET_ACCESS_KEY)
+            aws configure set region $(params.AWS_REGION)
+        }
+
         # Give developers 15mins to connect to a pod and remove the file
         # if they want to investigate the failure
         failure_file="$PWD/destroy-cluster.txt"
@@ -63,6 +69,7 @@ spec:
             echo "[$(date +"%Y/%m/%d %H:%M:%S")] Started to destroy cluster [$CLUSTER_NAME]..."
 
             printf "Log in to your Red Hat account...\n"
+            config_aws_creds
             rosa login --token="$ROSA_TOKEN"
 
             # Here we just trigger the deletion of the cluster, we won't wait for it to be completely deleted
