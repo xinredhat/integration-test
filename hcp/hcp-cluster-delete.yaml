@@ -11,7 +11,7 @@ spec:
       description: ocp cluster region where you want to delete
   steps:
     - name: delete-cluster
-      image: quay.io/konflux-qe-incubator/konflux-qe-tools@sha256:2fefc1984a58889c3f057734aedd92fabfcee4454f8b3524ffbc61bb38d87e02
+      image: quay.io/konflux-qe-incubator/konflux-qe-tools:latest
       env:
         - name: CLUSTER_NAME
           value: "$(params.name)"
@@ -40,7 +40,7 @@ spec:
         config_aws_creds() {
             aws configure set aws_access_key_id $(cat /workspace/AWS_ACCESS_KEY_ID)
             aws configure set aws_secret_access_key $(cat /workspace/AWS_SECRET_ACCESS_KEY)
-            aws configure set region $(params.AWS_REGION)
+            aws configure set region "$REGION"
         }
 
         if [[ -n "$CLUSTER_NAME"  ]]; then
