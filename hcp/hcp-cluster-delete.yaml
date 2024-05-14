@@ -2,7 +2,7 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: hcp-cluster-create-task
+  name: hcp-cluster-delete-task
 spec:
   params:
     - name: name
@@ -18,17 +18,17 @@ spec:
         - name: ROSA_TOKEN
           valueFrom:
             secretKeyRef:
-              name: hcp-cluster_secret
+              name: hcp-cluster-secret
               key: "rosa_token"
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: hcp-cluster_secret
+              name: hcp-cluster-secret
               key: "aws_access_key_id"
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: hcp-cluster_secret
+              name: hcp-cluster-secret
               key: "aws_secret_access_key"
         - name: REGION
           value: "$(params.region)"
@@ -38,8 +38,8 @@ spec:
         set -o pipefail
 
         config_aws_creds() {
-            aws configure set aws_access_key_id $(cat /workspace/AWS_ACCESS_KEY_ID)
-            aws configure set aws_secret_access_key $(cat /workspace/AWS_SECRET_ACCESS_KEY)
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
             aws configure set region "$REGION"
         }
 

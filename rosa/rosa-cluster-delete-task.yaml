@@ -18,17 +18,17 @@ spec:
         - name: ROSA_TOKEN
           valueFrom:
             secretKeyRef:
-              name: hcp-cluster_secret
+              name: hcp-cluster-secret
               key: "rosa_token"
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: hcp-cluster_secret
+              name: hcp-cluster-secret
               key: "aws_access_key_id"
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: hcp-cluster_secret
+              name: hcp-cluster-secret
               key: "aws_secret_access_key"
         - name: REGION
           value: "$(params.region)"
